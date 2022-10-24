@@ -34,7 +34,7 @@ app.get("/api/private", checkJwt, function (req, res) {
   });
 });
 
-const checkScopes = requiredScopes("read:current_user");
+const checkScopes = requiredScopes("read:message");
 
 app.get("/api/private-scoped", checkJwt, checkScopes, function (req, res) {
   res.json({

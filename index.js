@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const { auth, requiredScopes } = require("express-oauth2-jwt-bearer");
+var connection = require("./database.js");
 
 // Authorization middleware. When used, the Access Token must
 // exist and be verified against the Auth0 JSON Web Key Set.
@@ -40,6 +41,20 @@ app.get("/api/private-scoped", checkJwt, checkScopes, function (req, res) {
   res.json({
     message:
       "Hello from a private endpoint! You need to be authenticated and have a scope of read:messages to see this.",
+  });
+});
+
+app.get("/", function (req, res) {
+  connection.query("SELECT * FROM authors", function (err, rows) {
+    if (err) {
+      res.json({
+        message: "Failed to retrieve data",
+      });
+    } else {
+      res.json({
+        message: rows,
+      });
+    }
   });
 });
 

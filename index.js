@@ -2,6 +2,11 @@ const express = require("express");
 const app = express();
 const { auth, requiredScopes } = require("express-oauth2-jwt-bearer");
 var connection = require("./database.js");
+const Redis = require("redis");
+
+const redisClient = Redis.createClient();
+redisClient.connect().then((resp) => console.log("connected"));
+const DEFAULT_EXPIRATION = 60;
 
 // Authorization middleware. When used, the Access Token must
 // exist and be verified against the Auth0 JSON Web Key Set.
@@ -44,18 +49,29 @@ app.get("/api/private-scoped", checkJwt, checkScopes, function (req, res) {
   });
 });
 
-app.get("/", function (req, res) {
-  connection.query("SELECT * FROM authors", function (err, rows) {
-    if (err) {
-      res.json({
-        message: "Failed to retrieve data",
-      });
-    } else {
-      res.json({
-        message: rows,
-      });
-    }
-  });
+app.get("/", async (req, res) => {
+  console.log("get request");
+  const authors = await redisClient.get("authors");
+  if (authors != null) {
+    console.log("cache hit");
+    return res.json({
+      message: JSON.parse(authors),
+    });
+  } else {
+    console.log("cache miss");
+    connection.query("SELECT * FROM authors", function (err, rows) {
+      if (err) {
+        res.json({
+          message: "Failed to retrieve data",
+        });
+      } else {
+        redisClient.setEx("authors", DEFAULT_EXPIRATION, JSON.stringify(rows));
+        res.json({
+          message: rows,
+        });
+      }
+    });
+  }
 });
 
 app.listen(8393, function () {

@@ -1,0 +1,11 @@
+1. open ubuntu terminal 1.
+2. in 1. run 'redis-server'
+3. open ubuntu terminal 2.
+4. in 2. run 'redis-cli' then run 'del authors'
+5. open postman, Plato Backend, Task-E, redis-cache-example
+6. open vsc OTOT Backend Task C
+7. open vsc powershell terminal 3.
+8. in 3. run 'npm start'
+9. Send get request via postman
+
+- Show that cache miss will result in longer return time
